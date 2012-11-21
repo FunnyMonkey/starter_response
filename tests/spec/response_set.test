@@ -1,0 +1,21 @@
+<?php
+
+class StarterResponseResponseSetTestCase extends StarterResponseWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Starter Response responseSet entity tests',
+      'description' => 'Test Starter Response responseSet entity functionality',
+      'group' => 'Starter Response'
+    );
+  }
+
+  /**
+   * Test the functionality of saving and retrieving ResponseSet entity.
+   */
+  function testResponseSetEntity() {
+    $responseSet = $this->createResponseSet('entity1', 'bundle1', 'entity2', 'bundle2', '5');
+    $this->assertNotNull($responseSet);
+    $this->assertTrue(!empty($responseSet));
+
+  }
+}

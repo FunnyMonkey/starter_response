@@ -1,0 +1,18 @@
+<?php
+
+class StarterResponseWebTestCase extends DrupalWebTestCase {
+  function setUp($modules = array()) {
+    $modules = array_merge(array('starter_response', 'entity'), $modules);
+    parent::setUp($modules);
+  }
+
+  function createResponseSet($start_entity, $start_bundle, $response_entity, $response_bundle, $allowed_responses) {
+    $responseSet = new StarterResponseSet;
+    $responseSet->start_entity = $start_entity;
+    $responseSet->start_bundle = $start_bundle;
+    $responseSet->response_entities = array($response_entity => array($response_bundle));
+    $responseSet->allowed_responses = $allowed_responses;
+    $responseSet->save();
+    return $responseSet;
+  }
+}
