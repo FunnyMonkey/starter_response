@@ -27,13 +27,12 @@ class StarterResponseSetEntityController extends EntityAPIController implements 
       if (isset($entity->response_entities) && !empty($entity->response_entities)) {
         $query = db_insert('starter_response_set_responses')
           ->fields(array('set_id', 'response_entity', 'response_bundle'));
-        foreach ($entity->response_entities as $entity_type => $bundles) {
-          if (!empty($bundles)) {
-            foreach ($bundles as $bundle) {
-              if (!empty($bundle)) {
-                $query->values(array('set_id' => $entity->id, 'response_entity' => $entity_type, 'response_bundle' => $bundle));
-              }
-            }
+        foreach ($entity->response_entities as $response_config) {
+          if (isset($response_config['entity']) && isset($response_config['bundle'])) {
+            $query->values(array('set_id' => $entity->id, 'response_entity' => $response_config['entity'], 'response_bundle' => $response_config['bundle']));
+          }
+          else {
+
           }
         }
         $query->execute();
@@ -65,12 +64,7 @@ class StarterResponseSetEntityController extends EntityAPIController implements 
         ->execute();
 
       foreach ($rows as $row) {
-        if (isset($entities[$row->set_id]->response_entities[$row->response_entity])) {
-          $entities[$row->set_id]->response_entities[$row->response_entity][] = $row->response_bundle;
-        }
-        else {
-          $entities[$row->set_id]->response_entities[$row->response_entity] = array($row->response_bundle);
-        }
+        $entities[$row->set_id]->response_entities[] = array('entity' => $row->response_entity, 'bundle' => $row->response_bundle);
       }
     }
 
