@@ -292,20 +292,14 @@ function starter_response_set_form_remove_set_submit($form, &$form_state) {
 }
 
 /**
- * Submit handler to add more choices to a response set form.
+ * Submit handler to add more response entities to a response set form.
  */
 function starter_response_set_form_more_submit($form, &$form_state) {
-  // If this is a Ajax POST, add 1, otherwise add 5 more choices to the form.
+  // If this is a Ajax POST, add 1, otherwise add 5 more entities to the form.
   if ($form_state['values']['response_more']) {
     $n = $_GET['q'] == 'system/ajax' ? 1 : 5;
     $form_state['responses_count'] = count($form_state['values']['response_entities']) + $n;
   }
-  // Renumber the choices. This invalidates the corresponding key/value
-  // associations in $form_state['input'], so clear that out. This requires
-  // poll_form() to rebuild the choices with the values in
-  // $form_state['node']->choice, which it does.
-//  $form_state['node']->choice = array_values($form_state['values']['choice']);
-//  unset($form_state['input']['choice']);
   $form_state['rebuild'] = TRUE;
 }
 
