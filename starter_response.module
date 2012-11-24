@@ -89,12 +89,13 @@ function starter_response_menu_local_tasks_alter(&$data, $router_item, $root_pat
 }
 
 /**
- * Wrapper function for menu loader.
+ * Implements hook_theme().
  */
-function starter_response_set_load($id) {
-  return StarterResponseSet::find($id);
-}
+function starter_resposne_theme() {
+  return array(
 
+  );
+}
 
 /**
  * Implements hook_forms().
@@ -113,6 +114,13 @@ function starter_response_forms($form_id, $args) {
   );
 
   return $forms;
+}
+
+/**
+ * Wrapper function for menu loader.
+ */
+function starter_response_set_load($id) {
+  return StarterResponseSet::find($id);
 }
 
 /**

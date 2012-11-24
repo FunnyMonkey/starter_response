@@ -40,7 +40,7 @@ function starter_response_admin_overview() {
 }
 
 /**
- * Page callback for new set form.
+ * Page callback for new response set form.
  */
 function starter_response_set_form_wrapper(StarterResponseSet $set) {
   // Set the page title
@@ -53,7 +53,7 @@ function starter_response_set_form_wrapper(StarterResponseSet $set) {
 }
 
 /**
- * Page callback for new set form.
+ * Page callback for edit response set form.
  */
 function starter_response_set_delete_form_wrapper(StarterResponseSet $set) {
   module_load_include('inc', 'starter_response', 'includes/starter_response.forms');

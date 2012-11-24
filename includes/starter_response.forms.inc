@@ -57,6 +57,63 @@ function starter_response_set_form($form, &$form_state, StarterResponseSet $set)
     $form['start_bundle']['#default_value'] = $set->start_bundle;
   }
 
+  // If the "Remove" button was clicked for a set, we need to remove that set
+  // from the form.
+  if (isset($form_state['to_remove'])) {
+    unset($set->response_entities[$form_state['to_remove']]);
+    unset($form_state['to_remove']);
+    $form_state['response_count']--;
+  }
+
+  if (isset($form_state['responses_count'])) {
+    $response_entities_count = $form_state['responses_count'];
+  }
+  else {
+    $response_entities_count = max(1, empty($set->response_entities) ? 1 : count($set->response_entities));
+  }
+
+
+  // Add a wrapper for the resposnes and more button.
+  $form['response_wrapper'] = array(
+    '#tree' => FALSE,
+  );
+
+  $form['response_wrapper']['response_entities'] = array(
+    '#tree' => TRUE,
+    '#prefix' => '<div id="response-entities-replacement-container">',
+    '#suffix' => '</div>',
+  );
+
+  // Add the current resposnes to the form.
+  $count = 0;
+  if (isset($set->response_entities)) {
+    $count = count($set->response_entities);
+    foreach ($set->response_entities as $delta => $response_set) {
+      $form['response_wrapper']['response_entities'][$delta] = _starter_response_response_set_form($delta, $response_set['entity'], $response_set['bundle'], $form_state);
+    }
+  }
+
+  // Add initial or additional responses.
+  $existing_delta = $count;
+  for ($count; $count < $response_entities_count; $count++) {
+    // Increase the delta
+    $delta++;
+    $form['response_wrapper']['response_entities'][$delta] = _starter_response_response_set_form($delta, NULL, NULL, $form_state);
+  }
+
+  $form['response_wrapper']['response_more'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add another response type'),
+    '#weight' => 1,
+    '#limit_validation_errors' => array(array('response_entities')),
+    '#submit' => array('starter_response_set_form_more_submit'),
+    '#ajax' => array(
+      'callback' => 'starter_response_set_form_more_resposnes_js',
+      'wrapper' => 'response-entities-replacement-container',
+      'effect' => 'fade',
+    ),
+  );
+
   $form['allowed_responses'] = array(
     '#type' => 'textfield',
     '#required' => TRUE,
@@ -143,11 +200,113 @@ function starter_response_set_form_delete_submit($form, &$form_state) {
   $form_state['redirect'] = array('admin/structure/starter-response/' . $set->id . '/delete', array('query' => $destination));
 }
 
+function _starter_response_response_set_form($delta, $entity = NULL, $bundle = NULL, $form_state) {
+  $form = array(
+    '#tree' => TRUE,
+  );
+
+  $form['entity'] = array(
+    '#title' => t('Entity'),
+    '#type' => 'select',
+    '#options' => starter_response_map_entity_types(),
+    '#ajax' => array(
+      'callback' => 'starter_response_set_form_response_entity_callback',
+      'wrapper' => 'response-bundle-replacement-container-' . $delta,
+    ),
+    '#required' => TRUE,
+    '#default_value' => $entity,
+    '#title_display' => 'before',
+    '#prefix' => '<div class="container-inline">',
+  );
+
+  $response_entity_value = (isset($form_state['values']['response_entities'][$delta]['entity'])) ? $form_state['values']['response_entities'][$delta]['entity'] : $entity;
+
+  if (!empty($response_entity_value)) {
+    $bundles = starter_response_map_bundles($response_entity_value);
+  }
+  else {
+    $bundles = array();
+  }
+
+  $form['bundle'] = array(
+    '#title' => t('Bundle'),
+    '#type' => 'select',
+    '#options' => $bundles,
+    '#required' => TRUE,
+    '#prefix' => '<div id="response-bundle-replacement-container-' . $delta . '">',
+    '#suffix' => '</div>',
+  );
+
+  $form['remove'] = array(
+    '#type' => 'submit',
+    '#suffix' => '</div>',
+    '#value' => t('Remove'),
+    '#submit' => array('starter_response_set_form_remove_set_submit'),
+    '#ajax' => array(
+      'callback' => 'starter_response_set_form_more_resposnes_js',
+      'wrapper' => 'response-entities-replacement-container',
+      'method' => 'replace',
+      'effect' => 'fade',
+    ),
+    '#limit_validation_errors' => array(),
+  );
+
+
+  if (!empty($entity)) {
+    $form['bundle']['#default_value'] = $bundle;
+  }
+
+  return $form;
+}
+
 /**
  * Ajax callback for field_inspector_inspection_form.
  */
 function starter_response_set_form_entity_callback($form, $form_state) {
   return $form['start_bundle'];
+}
+
+/**
+ * Ajax callback for field_inspector_inspection_form.
+ */
+function starter_response_set_form_response_entity_callback($form, $form_state) {
+  $delta = $form_state['triggering_element']['#parents'][1];
+  return $form['response_wrapper']['response_entities'][$delta]['bundle'];
+}
+
+/**
+ * Ajax callback in response to new resposnes being added to the form.
+ */
+function starter_response_set_form_more_resposnes_js($form, $form_state) {
+  return $form['response_wrapper']['response_entities'];
+}
+
+/**
+ * Submit handler for the "Remove set" button.
+ */
+function starter_response_set_form_remove_set_submit($form, &$form_state) {
+  // Get the set delta for the clicked button.
+  $delta = $form_state['clicked_button']['#parents'][1];
+  $form_state['to_remove'] = $delta;
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Submit handler to add more choices to a response set form.
+ */
+function starter_response_set_form_more_submit($form, &$form_state) {
+  // If this is a Ajax POST, add 1, otherwise add 5 more choices to the form.
+  if ($form_state['values']['response_more']) {
+    $n = $_GET['q'] == 'system/ajax' ? 1 : 5;
+    $form_state['responses_count'] = count($form_state['values']['response_entities']) + $n;
+  }
+  // Renumber the choices. This invalidates the corresponding key/value
+  // associations in $form_state['input'], so clear that out. This requires
+  // poll_form() to rebuild the choices with the values in
+  // $form_state['node']->choice, which it does.
+//  $form_state['node']->choice = array_values($form_state['values']['choice']);
+//  unset($form_state['input']['choice']);
+  $form_state['rebuild'] = TRUE;
 }
 
 /**
