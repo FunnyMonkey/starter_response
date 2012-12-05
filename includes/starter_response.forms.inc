@@ -92,9 +92,11 @@ function starter_response_set_form($form, &$form_state, StarterResponseSet $set)
       $form['response_wrapper']['response_entities'][$delta] = _starter_response_response_set_form($delta, $response_set['entity'], $response_set['bundle'], $form_state);
     }
   }
+  if (empty($delta)) {
+    $delta = 0;
+  }
 
   // Add initial or additional responses.
-  $existing_delta = $count;
   for ($count; $count < $response_entities_count; $count++) {
     // Increase the delta
     $delta++;

@@ -43,6 +43,15 @@ class StarterResponseSet extends StarterResponseBaseEntity {
    */
   public function save() {
     $this->updated = REQUEST_TIME;
+    dsm($this);
+    $unchanged = entity_load_unchanged('starter_response_set', $this->id);
+    dsm($unchanged);
+    try {
+
+    }
+    catch (Exception $e) {
+
+    }
     parent::save();
   }
 
