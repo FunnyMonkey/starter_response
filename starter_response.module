@@ -179,3 +179,19 @@ function starter_response_map_bundles($type) {
   }
   return $options;
 }
+
+/**
+ * Implements hook_entity_info();
+ */
+function starter_response_entity_presave($entity, $entity_type) {
+  $entity_info = entity_get_info();
+  $bundle_key = $entity_info[$entity_type]['bundle keys']['bundle'];
+  $bundle = $entity->{$bundle_key};
+
+  $sets = StarterResponseSet::findByResponse($entity_type, $bundle);
+
+  foreach ($sets as $set) {
+    $allowed = $set->allowResponse($entity, $entity_type, $bundle);
+
+  }
+}
