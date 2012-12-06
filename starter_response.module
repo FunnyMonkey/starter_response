@@ -4,3 +4,13 @@
  * @file
  *
  */
+
+
+/**
+ * Implementation of hook_ctools_plugin_directory().
+ */
+function starter_response_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'entityreference') {
+    return 'plugins/entityreference_' . $plugin;
+  }
+}
