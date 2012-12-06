@@ -1,16 +1,10 @@
 name = "Starter Response"
 description = ""
 core = 7.x
-dependencies[] = entity
 dependencies[] = entityreference
 
 ; Classes
-files[] = includes/classes/query.inc
-files[] = includes/classes/base_entity.inc
-files[] = includes/classes/response_set_entity.inc
-files[] = includes/classes/response_set_controller.inc
 
 ; Tests
-files[] = tests/starter_response.test
-files[] = tests/spec/response_set.test
+
 
